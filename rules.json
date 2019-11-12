@@ -1,0 +1,65 @@
+{
+    "rule_set": [
+        {
+            "description": "Rule 1",
+            "predicate": "All",
+            "rules": [
+                {
+                    "field": "To",
+                    "condition": "Contains",
+                    "value": "gmail.com"
+                }
+            ],
+            "actions": [
+                {
+                    "action": "Add Label",
+                    "label": "happyfox"
+                },
+                {
+                    "action": "Mark as Read"
+                },
+                {
+                    "action": "Archive"
+                }
+            ]
+        },
+        {
+            "description": "Rule 2",
+            "predicate": "All",
+            "rules": [
+                {
+                    "field": "From",
+                    "condition": "Does Not Contain",
+                    "value": "gmail.com"
+                },
+                {
+                    "field": "Date",
+                    "condition": "Less Than",
+                    "value": "2",
+                    "interval": "Days"
+                }
+            ],
+            "actions": [
+                {
+                    "action": "Mark As Read"
+                }
+            ]
+        },
+        {
+            "description": "Rule 3",
+            "predicate": "Any",
+            "rules": [
+                {
+                    "field": "From",
+                    "condition": "contains",
+                    "value": "glassdoor"
+                }
+            ],
+            "actions": [
+                {
+                    "action": "Archive Message"
+                }
+            ]
+        }
+    ]
+}
