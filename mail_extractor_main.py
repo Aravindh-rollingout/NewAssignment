@@ -18,6 +18,10 @@ def main():
 
     service = Util.get_gmail_service()
 
+    # Service will be None if exception occurs when getting GMail Service
+    if not service:
+        return
+
     # Call the Gmail API for retrieving messages.
     #  Messages fetched are limited to 100 by Gmail by default
     results = service.users().messages().list(userId='me').execute()
@@ -38,7 +42,7 @@ def main():
     # fetch ids based on rules.json
     rule_list = Util.get_rule_list_from_json()
     if not rule_list:
-        print("Error parsing json file")
+        return
     # rule_list will be None if json file parsing fails
 
     # Update DB rule-wise
@@ -49,6 +53,10 @@ def main():
 
         # Construct select for current rule to fetch IDs
         query, value_list, desc = Util.construct_select_query(rule)
+        if not query or not value_list:
+            print("Data fetch unsuccessful")
+            return
+        # Perform select query and fetch rule based Ids
         db_obj.cur.execute(query, value_list)
         records = db_obj.cur.fetchall()
 

@@ -2,6 +2,7 @@ import os.path
 import json
 import pickle
 import dateparser
+from traceback import format_exc
 
 from dateutil.relativedelta import *
 from datetime import datetime
@@ -43,11 +44,12 @@ class Util:
     @staticmethod
     def get_rule_list_from_json():
         try:
-            with open('rules.json') as json_content:
+            with open('NewAssignment/rules.json') as json_content:
                 rule_content = json.load(json_content)
                 rule_list = rule_content.get("rule_set")
             return rule_list
         except Exception:
+            print("Error parsing json file. Please check location of .json file")
             return None
 
     @staticmethod
@@ -63,10 +65,17 @@ class Util:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    'credentials.json', SCOPES)
-                creds = flow.run_local_server(port=0)
-            # save credentials in .pickle file 
+                try:
+                    flow = InstalledAppFlow.from_client_secrets_file(
+                        'NewAssignment/credentials.json', SCOPES)
+                    creds = flow.run_local_server(port=0)
+                except FileNotFoundError as ex:
+                    print(
+                        "Error while parsing credentials json file. Please check name and location of credntials.json file. Find error details here")
+                    print(format_exc())
+                    return None
+
+            # save credentials in .pickle file
             with open('token.pickle', 'wb') as token:
                 pickle.dump(creds, token)
 
@@ -96,37 +105,46 @@ class Util:
     def construct_select_query(rule):
         value_list = []
         sub_query = ""
-        desc = rule['description']
-        pred = rule.get('predicate')
-        sub_rules = rule.get('rules')
-        clause = ' AND ' if (pred == PREDICATE_ALL) else ' OR '
-        for sub_rule in sub_rules:
-            field = sub_rule.get('field')
-            condition = sub_rule.get('condition')
-            if field == 'Date':
-                comparator = ' > ' if condition == LESS_THAN else ' < '
-                interval_value = sub_rule.get('value')
-                interval = sub_rule.get('Interval')
-                month = 0
-                day = 0
-                if interval == INTERVAL_DAYS:
-                    month = int(interval_value)
+        try:
+            desc = rule['description']
+            pred = rule.get('predicate')
+            sub_rules = rule.get('rules')
+            clause = ' AND ' if (pred == PREDICATE_ALL) else ' OR '
+            for sub_rule in sub_rules:
+                field = sub_rule.get('field')
+                condition = sub_rule.get('condition')
+                if field == 'Date':
+                    comparator = ' > ' if condition == LESS_THAN else ' < '
+
+                    interval_value = sub_rule.get('value')
+                    interval = sub_rule.get('interval')
+                    month = 0
+                    day = 0
+                    if interval == INTERVAL_DAYS:
+                        month = int(interval_value)
+                    elif interval == INTERVAL_MONTHS:
+                        day = int(interval_value)
+                    else:
+                        raise Exception("Input format for field is invalid.")
+                    stamp = datetime.now() + relativedelta(months=-month, days=-day)
+                    stamp_millis = int(stamp.timestamp() * 1000)
+                    value_list.append(str(stamp_millis))
+                elif field in ['To', 'From', 'Subject']:
+                    value = '%' + sub_rule.get('value')+'%'
+                    comparator = ' LIKE ' if condition == CONTAINS else ' NOT LIKE '
+                    value_list.append(value)
                 else:
-                    day = int(interval_value)
-                stamp = datetime.now() + relativedelta(months=-month, days=-day)
-                stamp_millis = int(stamp.timestamp() * 1000)
-                value_list.append(str(stamp_millis))
-            else:
-                value = '%' + sub_rule.get('value')+'%'
-                comparator = ' LIKE ' if condition == CONTAINS else ' NOT LIKE '
-                value_list.append(value)
+                    raise Exception("Input format for field is invalid.")
+                sub_query += Util.field_to_columns(field) + \
+                    comparator + '%s' + clause
 
-            sub_query += Util.field_to_columns(field) + \
-                comparator + '%s' + clause
-
-        query = "Select Id from HappyMails where " + \
-            sub_query[:-len(clause)]
-        return query, value_list, desc
+            query = "Select Id from HappyMails where " + \
+                sub_query[:-len(clause)]
+            return query, value_list, desc
+        except Exception as ex:
+            print("Input format invalid for rules.json")
+            print(format_exc())
+            return None, None, None
 
     @staticmethod
     def get_id_list(records):

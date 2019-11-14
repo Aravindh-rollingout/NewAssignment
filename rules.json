@@ -51,7 +51,7 @@
             "rules": [
                 {
                     "field": "From",
-                    "condition": "contains",
+                    "condition": "Contains",
                     "value": "glassdoor"
                 }
             ],
