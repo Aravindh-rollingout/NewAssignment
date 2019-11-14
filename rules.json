@@ -16,10 +16,10 @@
                     "label": "happyfox"
                 },
                 {
-                    "action": "Mark as Read"
+                    "action": "Mark As Read"
                 },
                 {
-                    "action": "Archive"
+                    "action": "Archive Message"
                 }
             ]
         },
@@ -51,8 +51,8 @@
             "rules": [
                 {
                     "field": "From",
-                    "condition": "Contains",
-                    "value": "glassdoor"
+                    "condition": "Equals",
+                    "value": "rsreearvindh@gmail.com"
                 }
             ],
             "actions": [

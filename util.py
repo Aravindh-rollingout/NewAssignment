@@ -130,8 +130,22 @@ class Util:
                     stamp_millis = int(stamp.timestamp() * 1000)
                     value_list.append(str(stamp_millis))
                 elif field in ['To', 'From', 'Subject']:
-                    value = '%' + sub_rule.get('value')+'%'
-                    comparator = ' LIKE ' if condition == CONTAINS else ' NOT LIKE '
+
+                    if condition == CONTAINS:
+                        comparator = ' LIKE '
+                        value = '%' + sub_rule.get('value')+'%'
+                    elif condition == NOT_CONTAINS:
+                        comparator = ' NOT LIKE '
+                        value = '%' + sub_rule.get('value')+'%'
+                    elif condition == EQUALS:
+                        comparator = ' = '
+                        value = sub_rule.get('value')
+                    elif condition == NOT_EQUALS:
+                        comparator = ' != '
+                        value = sub_rule.get('value')
+                    else:
+                        raise Exception(
+                            "Input format for condition is invalid.")
                     value_list.append(value)
                 else:
                     raise Exception("Input format for field is invalid.")
@@ -157,19 +171,26 @@ class Util:
     def construct_update_query(rule, id_list):
         value_list = []
         query = "UPDATE HappyMails SET "
-        actions = rule.get('actions')
-        for sub_action in actions:
-            action = sub_action.get('action')
-            if action == ADD_LABEL:
-                query += ' Label = %s,'
-                value_list.append(sub_action.get('label'))
-            elif action == ACTION_MARK_AS_READ:
-                query += ' ReadByUser = true,'
-            elif action == ACTION_ARCHIVE:
-                query += ' Archive = true,'
+        try:
+            actions = rule.get('actions')
+            for sub_action in actions:
+                action = sub_action.get('action')
+                if action == ADD_LABEL:
+                    query += ' Label = %s,'
+                    value_list.append(sub_action.get('label'))
+                elif action == ACTION_MARK_AS_READ:
+                    query += ' ReadByUser = true,'
+                elif action == ACTION_ARCHIVE:
+                    query += ' Archive = true,'
+                else:
+                    raise Exception("Input format for action is invalid.")
 
-        format_strings = ','.join(['%s'] * len(id_list))
-        query = query[:-1] + ' Where Id in (%s)' % format_strings
+            format_strings = ','.join(['%s'] * len(id_list))
+            query = query[:-1] + ' Where Id in (%s)' % format_strings
+        except Exception as ex:
+            print("Input format invalid for rules.json while parsing actions")
+            print(format_exc())
+            return None, None
         return query, value_list
 
     @staticmethod

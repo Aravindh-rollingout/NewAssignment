@@ -64,6 +64,10 @@ def main():
         id_list = Util.get_id_list(records)
         query, value_list = Util.construct_update_query(rule, id_list)
 
+        if not query:
+            print("Fetching actions unsuccessfull")
+            return
+
         if len(id_list) > 0:
             value_list.extend(id_list)
             db_obj.cur.execute(query, value_list)

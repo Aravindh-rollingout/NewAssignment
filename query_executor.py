@@ -58,6 +58,7 @@ class QueryExecutor:
 
     @staticmethod
     def execute_select_all_query(db_obj):
+        print("\n\n printing all DB data")
         try:
             sql = "Select Id, FromAddress, ToAddress, MailSub, DateReceived, ReadByUser, Archive, Label From HappyMails"
             db_obj.cur.execute(sql)
