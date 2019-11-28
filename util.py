@@ -44,7 +44,7 @@ class Util:
     @staticmethod
     def get_rule_list_from_json():
         try:
-            with open('NewAssignment/rules.json') as json_content:
+            with open('rules.json') as json_content:
                 rule_content = json.load(json_content)
                 rule_list = rule_content.get("rule_set")
             return rule_list
@@ -65,16 +65,10 @@ class Util:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                try:
-                    flow = InstalledAppFlow.from_client_secrets_file(
-                        'NewAssignment/credentials.json', SCOPES)
-                    creds = flow.run_local_server(port=0)
-                except FileNotFoundError as ex:
-                    print(
-                        "Error while parsing credentials json file. Please check name and location of credntials.json file. Find error details here")
-                    print(format_exc())
-                    return None
 
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    'credentials.json', SCOPES)
+                creds = flow.run_local_server(port=0)
             # save credentials in .pickle file
             with open('token.pickle', 'wb') as token:
                 pickle.dump(creds, token)
