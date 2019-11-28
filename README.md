@@ -13,7 +13,7 @@ Assignment Execution Steps:
 2. You will have to run the python file mail_executor_main with the following command
    python mail_executor_main
 
-3. Make sure you have a MySQL DB with username and password as 'host' available for connection.
+3. Make sure you have a MySQL DB with username and password as 'root' available for connection.
 
 4. The terminal will directly open a window in your default browser requesting your authentication and permissions to view your mail messages.
 
